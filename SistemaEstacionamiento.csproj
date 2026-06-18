@@ -21,8 +21,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\NewFolder\" />
-    <Folder Include="DTOs\" />
-    <Folder Include="Services\" />
+    <Folder Include="Views\Usuarios\" />
   </ItemGroup>
 
 </Project>

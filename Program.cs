@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using SistemaEstacionamiento.Models;
+using SistemaEstacionamiento.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +14,40 @@ builder.Services.AddDbContext<EstacionamientoModels>(options =>
     )
 );
 
+// eeeeuuu maniño aca se registra los servicios asi que cuando crees uno nuevo lo registras aca para que se pueda usar en los controladores gaaaaa
+builder.Services.AddScoped<UsuariosService>();
+builder.Services.AddScoped<LoginService>();
+builder.Services.AddScoped<EntidadesService>();
+builder.Services.AddScoped<TipoDocumentoService>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Login/Login";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+    });
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var usuarioService = services.GetRequiredService<UsuariosService>();
+
+        bool creado = await usuarioService.CrearUsuarioXDefecto();
+
+        if (creado)
+        {
+            Console.WriteLine("--> [Inicio] Usuario por defecto verificado/creado con éxito.");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"--> [Inicio] Error al ejecutar el servicio de inicio: {ex.Message}");
+    }
+}
 
 if (!app.Environment.IsDevelopment())
 {
@@ -25,10 +60,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Login}/{action=Login}/{id?}");
 
 app.Run();

@@ -26,7 +26,7 @@
                     "Font Awesome 5 Brands",
                     "simple-line-icons",
                 ],
-                urls: ["/css/fonts.min.css"], // Apunta a tu carpeta css real
+                urls: ["/css/fonts.min.css"],
             },
             active: function () {
                 sessionStorage.fonts = true;
@@ -64,12 +64,58 @@
                                 <p>Dashboard</p>
                             </a>
                         </li>
+
                         <li class="nav-section">
                             <span class="sidebar-mini-icon">
                                 <i class="fa fa-ellipsis-h"></i>
                             </span>
-                            <h4 class="text-section">Módulos</h4>
+                            <h4 class="text-section">Operaciones</h4>
                         </li>
+
+                        <li class="nav-item">
+                            <a data-bs-toggle="collapse" href="#menuAdministracion">
+                                <i class="fas fa-folder"></i>
+                                <p>Administración</p>
+                                <span class="caret"></span>
+                            </a>
+                            <div class="collapse" id="menuAdministracion">
+                                <ul class="nav nav-collapse">
+
+                                    <li>
+                                        <a data-bs-toggle="collapse" href="#submenuMantenimientos">
+                                            <span class="sub-item">Mantenimientos</span>
+                                            <span class="caret"></span>
+                                        </a>
+                                        <div class="collapse" id="submenuMantenimientos">
+                                            <ul class="nav nav-collapse subnav-level">
+                                                <li>
+                                                    <a asp-controller="Usuarios" asp-action="Index">
+                                                        <span class="sub-item"><i class="fas fa-user-cog me-2"></i>Usuarios</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a asp-controller="Roles" asp-action="Index">
+                                                        <span class="sub-item"><i class="fas fa-user-shield me-2"></i>Roles</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a asp-controller="Entidades" asp-action="Entidades">
+                                                        <span class="sub-item"><i class="fas fa-address-book me-2"></i>Entidades</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a asp-controller="Sedes" asp-action="Index">
+                                                        <span class="sub-item"><i class="fas fa-map-marker-alt me-2"></i>Sedes Estacionamiento</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+
+                                </ul>
+                            </div>
+                        </li>
+
                         <li class="nav-item">
                             <a asp-area="" asp-controller="Home" asp-action="Privacy">
                                 <i class="fas fa-shield-alt"></i>
@@ -112,7 +158,7 @@
                                     </div>
                                     <span class="profile-username">
                                         <span class="op-7">Hola,</span>
-                                        <span class="fw-bold">Administrador</span>
+                                        <span class="fw-bold">@(User.Identity?.Name ?? "Usuario")</span>
                                     </span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-user animated fadeIn">
@@ -123,8 +169,8 @@
                                                 <img src="~/img/profile.jpg" alt="image profile" class="avatar-img rounded" />
                                             </div>
                                             <div class="u-text">
-                                                <h4>Administrador</h4>
-                                                <p class="text-muted">admin@sistema.com</p>
+                                                <h4>@(User.Identity?.Name ?? "Usuario")</h4>
+                                                <p class="text-muted small">📍 Sede: @(User.FindFirst("SedeNombre")?.Value ?? "Sin Sede")</p>
                                                 <a href="#" class="btn btn-xs btn-secondary btn-sm">Ver Perfil</a>
                                             </div>
                                         </div>
@@ -133,7 +179,9 @@
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="#">Configuración</a>
                                         <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="#">Cerrar Sesión</a>
+                                        <a class="dropdown-item text-danger" href="javascript:void(0);" id="btnCerrarSesion">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                        </a>
                                     </li>
                     </div>
                     </ul>
@@ -146,7 +194,7 @@
         <div class="container">
             <div class="page-inner">
                 <main role="main" class="pb-3">
-                        @RenderBody()
+                    @RenderBody()
                 </main>
             </div>
         </div>
@@ -164,14 +212,27 @@
     </div>
     </div>
 
+    <form id="formLogoutHidden" asp-controller="Login" asp-action="Logout" method="post" style="display:none;">
+        @Html.AntiForgeryToken()
+    </form>
+
     <script src="~/js/core/jquery-3.7.1.min.js"></script>
     <script src="~/js/core/popper.min.js"></script>
     <script src="~/js/core/bootstrap.min.js"></script>
 
     <script src="~/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
     <script src="~/js/kaiadmin.min.js"></script>
-
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#btnCerrarSesion').click(function(e) {
+                e.preventDefault();
+                $('#formLogoutHidden').submit();
+            });
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
