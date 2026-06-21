@@ -20,6 +20,8 @@ public partial class EstacionamientoModels : DbContext
 
     public virtual DbSet<PreciosEstacionamiento> PreciosEstacionamientos { get; set; }
 
+    public virtual DbSet<RegistrosEstacionamiento> RegistrosEstacionamientos { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<SedeEstacionamiento> SedeEstacionamientos { get; set; }
@@ -32,9 +34,11 @@ public partial class EstacionamientoModels : DbContext
 
     public virtual DbSet<Usuario> Usuarios { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseMySql("server=acela.proxy.rlwy.net;port=28560;database=EstacionamientoSistema;user=root;password=hcMITeXwrPnzawGSzqFDkanxDEiXUFUB", Microsoft.EntityFrameworkCore.ServerVersion.Parse("9.4.0-mysql"));
+    public virtual DbSet<Vehiculo> Vehiculos { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseMySql("server=thomas.proxy.rlwy.net;port=38359;database=EstacionamientoSistema;user=root;password=FQRsgPhDaWNxbjsZtaYBEYhELSbYfkdR", Microsoft.EntityFrameworkCore.ServerVersion.Parse("9.4.0-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -124,6 +128,61 @@ public partial class EstacionamientoModels : DbContext
                 .HasForeignKey(d => d.TipoVehiculoFk)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_precios_tipovehiculo");
+        });
+
+        modelBuilder.Entity<RegistrosEstacionamiento>(entity =>
+        {
+            entity.HasKey(e => e.ReesId).HasName("PRIMARY");
+
+            entity.ToTable("RegistrosEstacionamiento");
+
+            entity.HasIndex(e => e.SitiosFk, "fk_registro_sitio");
+
+            entity.HasIndex(e => e.UsuariosFk, "fk_registro_usuario");
+
+            entity.HasIndex(e => e.VehiculosFk, "fk_registro_vehiculo");
+
+            entity.Property(e => e.ReesId).HasColumnName("reesId");
+            entity.Property(e => e.ReesEstado)
+                .HasDefaultValueSql("'INGRESADO'")
+                .HasColumnType("enum('INGRESADO','FINALIZADO')")
+                .HasColumnName("reesEstado");
+            entity.Property(e => e.ReesFechaCreacion)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("reesFechaCreacion");
+            entity.Property(e => e.ReesFechaIngreso)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("reesFechaIngreso");
+            entity.Property(e => e.ReesFechaSalida)
+                .HasColumnType("datetime")
+                .HasColumnName("reesFechaSalida");
+            entity.Property(e => e.ReesMontoCobrado)
+                .HasPrecision(10, 2)
+                .HasColumnName("reesMontoCobrado");
+            entity.Property(e => e.ReesTiempoMinutos).HasColumnName("reesTiempoMinutos");
+            entity.Property(e => e.ReesUsuarioCreacion)
+                .HasMaxLength(50)
+                .HasColumnName("reesUsuarioCreacion");
+            entity.Property(e => e.SitiosFk).HasColumnName("SitiosFK");
+            entity.Property(e => e.UsuariosFk).HasColumnName("UsuariosFK");
+            entity.Property(e => e.VehiculosFk).HasColumnName("VehiculosFK");
+
+            entity.HasOne(d => d.SitiosFkNavigation).WithMany(p => p.RegistrosEstacionamientos)
+                .HasForeignKey(d => d.SitiosFk)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_registro_sitio");
+
+            entity.HasOne(d => d.UsuariosFkNavigation).WithMany(p => p.RegistrosEstacionamientos)
+                .HasForeignKey(d => d.UsuariosFk)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_registro_usuario");
+
+            entity.HasOne(d => d.VehiculosFkNavigation).WithMany(p => p.RegistrosEstacionamientos)
+                .HasForeignKey(d => d.VehiculosFk)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_registro_vehiculo");
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -282,6 +341,38 @@ public partial class EstacionamientoModels : DbContext
                 .HasForeignKey(d => d.SedeEstacionamientosFk)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_usuarios_sede");
+        });
+
+        modelBuilder.Entity<Vehiculo>(entity =>
+        {
+            entity.HasKey(e => e.VehiId).HasName("PRIMARY");
+
+            entity.HasIndex(e => e.TipoVehiculoFk, "fk_vehiculos_tipovehiculo");
+
+            entity.HasIndex(e => e.VehiPlaca, "vehiPlaca").IsUnique();
+
+            entity.Property(e => e.VehiId).HasColumnName("vehiId");
+            entity.Property(e => e.TipoVehiculoFk).HasColumnName("TipoVehiculoFK");
+            entity.Property(e => e.VehiColor)
+                .HasMaxLength(30)
+                .HasColumnName("vehiColor");
+            entity.Property(e => e.VehiEstado)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("vehiEstado");
+            entity.Property(e => e.VehiMarca)
+                .HasMaxLength(50)
+                .HasColumnName("vehiMarca");
+            entity.Property(e => e.VehiModelo)
+                .HasMaxLength(50)
+                .HasColumnName("vehiModelo");
+            entity.Property(e => e.VehiPlaca)
+                .HasMaxLength(20)
+                .HasColumnName("vehiPlaca");
+
+            entity.HasOne(d => d.TipoVehiculoFkNavigation).WithMany(p => p.Vehiculos)
+                .HasForeignKey(d => d.TipoVehiculoFk)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_vehiculos_tipovehiculo");
         });
 
         OnModelCreatingPartial(modelBuilder);

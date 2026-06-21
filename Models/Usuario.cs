@@ -29,6 +29,8 @@ public partial class Usuario
 
     public virtual Entidade EntidadesFkNavigation { get; set; } = null!;
 
+    public virtual ICollection<RegistrosEstacionamiento> RegistrosEstacionamientos { get; set; } = new List<RegistrosEstacionamiento>();
+
     public virtual Role RolesFkNavigation { get; set; } = null!;
 
     public virtual SedeEstacionamiento SedeEstacionamientosFkNavigation { get; set; } = null!;

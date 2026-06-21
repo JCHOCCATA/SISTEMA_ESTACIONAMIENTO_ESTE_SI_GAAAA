@@ -65,6 +65,12 @@
                             </a>
                         </li>
 
+                        <li class="nav-item active">
+                            <a asp-area="" asp-controller="RegistrosEstacionamiento" asp-action="RegistrosEstacionamiento">
+                                <i class="fas fa-car"></i> <p>Registros Vehículos</p>
+                            </a>
+                        </li>
+
                         <li class="nav-section">
                             <span class="sidebar-mini-icon">
                                 <i class="fa fa-ellipsis-h"></i>
@@ -104,8 +110,13 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a asp-controller="Sedes" asp-action="Index">
+                                                    <a asp-controller="Sedes" asp-action="Sedes">
                                                         <span class="sub-item"><i class="fas fa-map-marker-alt me-2"></i>Sedes Estacionamiento</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a asp-controller="Sitios" asp-action="Sitios">
+                                                        <span class="sub-item"><i class="fas fa-parking me-2"></i>Sitios Estacionamiento</span>
                                                     </a>
                                                 </li>
                                             </ul>
@@ -199,7 +210,7 @@
             </div>
         </div>
 
-        <footer class="footer border-top text-muted">
+        @* <footer class="footer border-top text-muted">
             <div class="container-fluid d-flex justify-content-between">
                 <div class="copyright">
                     &copy; 2026 - SistemaEstacionamiento - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
@@ -208,7 +219,7 @@
                     Diseño por <a href="http://www.themekita.com">ThemeKita</a>
                 </div>
             </div>
-        </footer>
+        </footer> *@
     </div>
     </div>
 

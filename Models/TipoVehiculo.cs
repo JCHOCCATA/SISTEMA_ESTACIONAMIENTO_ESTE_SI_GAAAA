@@ -10,4 +10,6 @@ public partial class TipoVehiculo
     public string TiveNombreVehiculo { get; set; } = null!;
 
     public virtual ICollection<PreciosEstacionamiento> PreciosEstacionamientos { get; set; } = new List<PreciosEstacionamiento>();
+
+    public virtual ICollection<Vehiculo> Vehiculos { get; set; } = new List<Vehiculo>();
 }

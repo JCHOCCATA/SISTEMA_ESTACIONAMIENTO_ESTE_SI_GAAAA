@@ -1,5 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SistemaEstacionamiento.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SistemaEstacionamiento.Services
 {
@@ -24,7 +28,8 @@ namespace SistemaEstacionamiento.Services
                     return new { success = false, message = $"El número de documento '{nuevaEntidad.EntiNroDocumento}' ya se encuentra registrado." };
                 }
 
-                nuevaEntidad.EntiEstado = true;
+                // CAMBIO AQUÍ: Asignar como string ("1" o "ACTIVO") según tu BD
+                nuevaEntidad.EntiEstado = "1";
                 nuevaEntidad.EntiFechaCreacion = DateTime.Now;
                 nuevaEntidad.EntiUsuarioCreacion = usuarioCreacion;
 
@@ -58,7 +63,8 @@ namespace SistemaEstacionamiento.Services
                         tipoDocumento = e.TipoDocumentoFkNavigation.TidoNombreDoc,
                         tipoDocumentoFk = e.TipoDocumentoFk,
                         entiNroDocumento = e.EntiNroDocumento,
-                        entiEstado = e.EntiEstado == true
+                        // CAMBIO AQUÍ: Compara contra el string correspondiente
+                        entiEstado = e.EntiEstado == "1"
                     })
                     .Cast<object>()
                     .ToListAsync();
@@ -76,7 +82,6 @@ namespace SistemaEstacionamiento.Services
         {
             try
             {
-                // 1. Buscar la entidad existente por su ID
                 var entidadDb = await _context.Entidades.FindAsync(entidadEditada.EntiId);
 
                 if (entidadDb == null)
@@ -84,7 +89,6 @@ namespace SistemaEstacionamiento.Services
                     return new { success = false, message = "La entidad que intenta modificar no existe." };
                 }
 
-                // 2. Validar que el nuevo número de documento no lo tenga OTRA entidad diferente
                 bool documentoDuplicado = await _context.Entidades
                     .AnyAsync(e => e.EntiNroDocumento == entidadEditada.EntiNroDocumento && e.EntiId != entidadEditada.EntiId);
 
@@ -128,7 +132,8 @@ namespace SistemaEstacionamiento.Services
                     return new { success = false, message = "La entidad no existe." };
                 }
 
-                entidadDb.EntiEstado = false;
+                // CAMBIO AQUÍ: Asignar como string ("0" o "ANULADO")
+                entidadDb.EntiEstado = "0";
                 entidadDb.EntiFechaModificacion = DateTime.Now;
                 entidadDb.EntiUsuarioModificacion = usuarioModificacion;
 

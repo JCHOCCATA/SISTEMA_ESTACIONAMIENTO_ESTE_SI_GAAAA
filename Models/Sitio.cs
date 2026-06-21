@@ -21,5 +21,7 @@ public partial class Sitio
 
     public string? SitiUsuarioModificacion { get; set; }
 
+    public virtual ICollection<RegistrosEstacionamiento> RegistrosEstacionamientos { get; set; } = new List<RegistrosEstacionamiento>();
+
     public virtual SedeEstacionamiento SedeEstacionamientosFkNavigation { get; set; } = null!;
 }

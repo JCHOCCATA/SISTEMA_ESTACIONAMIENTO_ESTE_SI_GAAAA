@@ -19,6 +19,9 @@ builder.Services.AddScoped<UsuariosService>();
 builder.Services.AddScoped<LoginService>();
 builder.Services.AddScoped<EntidadesService>();
 builder.Services.AddScoped<TipoDocumentoService>();
+builder.Services.AddScoped<SedesService>();
+builder.Services.AddScoped<SitiosService>();
+builder.Services.AddScoped<RegistrosEstacionamientoService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

@@ -13,7 +13,7 @@ public partial class Entidade
 
     public string EntiNroDocumento { get; set; } = null!;
 
-    public bool? EntiEstado { get; set; } = null!;
+    public string EntiEstado { get; set; } = null!;
 
     public DateTime? EntiFechaCreacion { get; set; }
 

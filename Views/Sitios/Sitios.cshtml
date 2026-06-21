@@ -1,9 +1,9 @@
 ﻿@{
-    ViewData["Title"] = "Mantenimiento de Entidades";
+    ViewData["Title"] = "Mantenimiento de Sitios";
 }
 
 <div class="page-header">
-    <h3 class="fw-bold mb-3">Administración de Entidades</h3>
+    <h3 class="fw-bold mb-3">Administración de Sitios</h3>
     <ul class="breadcrumbs mb-3">
         <li class="nav-home">
             <a href="/Home/Index"><i class="fas fa-home"></i></a>
@@ -11,7 +11,7 @@
         <li class="separator"><i class="fas fa-arrow-right"></i></li>
         <li class="nav-item"><a>Mantenimientos</a></li>
         <li class="separator"><i class="fas fa-arrow-right"></i></li>
-        <li class="nav-item"><a>Entidades</a></li>
+        <li class="nav-item"><a>Sitios</a></li>
     </ul>
 </div>
 
@@ -20,21 +20,20 @@
         <div class="card shadow-sm">
             <div class="card-header d-flex align-items-center justify-content-between bg-white py-3">
                 <div class="card-title text-secondary fw-semibold m-0">
-                    <i class="fas fa-address-book me-2 text-primary"></i> Lista de Entidades Registradas
+                    <i class="fas fa-parking me-2 text-primary"></i> Lista de Sitios Estacionamiento
                 </div>
-                <button class="btn btn-primary btn-round ms-auto" id="btnAbrirModalEntidad">
-                    <i class="fa fa-plus me-2"></i> Nueva Entidad
+                <button class="btn btn-primary btn-round ms-auto" id="btnAbrirModalSitio">
+                    <i class="fa fa-plus me-2"></i> Nuevo Sitio
                 </button>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="tablaEntidades" class="display table table-striped table-hover w-100">
+                    <table id="tablaSitios" class="display table table-striped table-hover w-100">
                         <thead class="bg-dark text-white text-center">
                             <tr>
-                                <th style="width: 8%">ID</th>
-                                <th>Razón Social / Nombre</th>
-                                <th style="width: 20%">Tipo Doc.</th>
-                                <th style="width: 18%">Nro. Documento</th>
+                                <th style="width: 10%">ID</th>
+                                <th>Nombre del Sitio / Casillero</th>
+                                <th>Sede de Estacionamiento</th>
                                 <th style="width: 15%">Acciones</th>
                             </tr>
                         </thead>
@@ -47,40 +46,40 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalEntidad" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalSitio" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
             <div class="modal-header bg-primary text-white py-3" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                <h4 class="modal-title fw-bold mb-0" id="modalTitulo"><i class="fas fa-plus-circle me-2"></i> Registrar Entidad</h4>
+                <h4 class="modal-title fw-bold mb-0" id="modalTitulo"><i class="fas fa-plus-circle me-2"></i> Registrar Sitios</h4>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formModalEntidad" autocomplete="off">
+            <form id="formModalSitio" autocomplete="off">
                 @Html.AntiForgeryToken()
                 <div class="modal-body p-4">
 
-                    <input type="hidden" id="EntiId" name="EntiId" />
+                    <input type="hidden" id="SitiId" name="SitiId" />
 
                     <div class="form-group mb-3 px-0">
-                        <label class="form-label fw-bold text-secondary fs-6" style="font-size: 0.95rem !important;">Tipo de Documento <span class="text-danger">*</span></label>
-                        <select class="form-select" id="TipoDocumentoFk" name="TipoDocumentoFk" style="font-size: 1.05rem;" required>
+                        <label class="form-label fw-bold text-secondary fs-6" style="font-size: 0.95rem !important;">Sede Estacionamiento <span class="text-danger">*</span></label>
+                        <select class="form-select" id="SedeEstacionamientosFk" name="SedeEstacionamientosFk" style="font-size: 1.05rem;" required>
                             <option value="" disabled selected>-- Seleccione una opción --</option>
                         </select>
                     </div>
 
-                    <div class="form-group mb-3 px-0">
-                        <label class="form-label fw-bold text-secondary fs-6" style="font-size: 0.95rem !important;">Número de Documento <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="EntiNroDocumento" name="EntiNroDocumento" placeholder="Ingrese el número" maxlength="20" style="font-size: 1.05rem;" required />
+                    <div class="form-group mb-3 px-0" id="divCantidad">
+                        <label class="form-label fw-bold text-secondary fs-6" style="font-size: 0.95rem !important;">Cantidad de Sitios a Generar <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="CantidadSitios" name="CantidadSitios" min="1" max="100" placeholder="Ej: 15" style="font-size: 1.05rem;" required />
                     </div>
 
-                    <div class="form-group mb-3 px-0">
-                        <label class="form-label fw-bold text-secondary fs-6" style="font-size: 0.95rem !important;">Razón Social / Nombre Completo <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="EntiRazonSocial" name="EntiRazonSocial" placeholder="Ej: Grupo Empresarial S.A.C." style="font-size: 1.05rem;" required />
+                    <div class="form-group mb-3 px-0" id="divNombreIndividual" style="display: none;">
+                        <label class="form-label fw-bold text-secondary fs-6" style="font-size: 0.95rem !important;">Nombre del Sitio / Casillero <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="SitiNombreSitio" name="SitiNombreSitio" placeholder="Ej: Sitio Modificado" style="font-size: 1.05rem;" />
                     </div>
 
                 </div>
                 <div class="modal-footer bg-light p-3" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                     <button type="button" class="btn btn-secondary px-3" style="font-size: 0.95rem;" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" id="btnGuardarEntidad" class="btn btn-primary px-4 fw-bold" style="font-size: 0.95rem;">
+                    <button type="submit" id="btnGuardarSitio" class="btn btn-primary px-4 fw-bold" style="font-size: 0.95rem;">
                         <i class="fas fa-save me-1"></i> Guardar Cambios
                     </button>
                 </div>
@@ -96,56 +95,79 @@
     <script>
         $(document).ready(function () {
 
-            // Inicialización de datos
-            cargarTiposDocumento();
+            // Inicializamos la data al cargar la página
+            cargarSedesCombo();
             initDataTable();
 
-            $('#btnAbrirModalEntidad').click(function() {
-                $('#formModalEntidad')[0].reset();
-                $('#EntiId').val('0');
-                $('#modalTitulo').html('<i class="fas fa-plus-circle me-2"></i> Registrar Entidad');
-                $('#modalEntidad').modal('show');
+            // Al abrir para un Nuevo Registro (Generación Masiva)
+            $('#btnAbrirModalSitio').click(function() {
+                $('#formModalSitio')[0].reset();
+                $('#SitiId').val('0');
+                $('#modalTitulo').html('<i class="fas fa-plus-circle me-2"></i> Generar Sitios Automáticos');
+
+                // Mostrar campo numérico y ocultar el de texto individual
+                $('#divCantidad').show();
+                $('#CantidadSitios').prop('required', true);
+                $('#divNombreIndividual').hide();
+                $('#SitiNombreSitio').prop('required', false);
+
+                $('#modalSitio').modal('show');
             });
 
-            // Función para poblar el select dinámicamente desde tu controlador
-            function cargarTiposDocumento() {
-                $.getJSON('/TipoDocumento/ObtenerTiposDocumentoJson', function (data) {
-                    const select = $('#TipoDocumentoFk');
+            // Al presionar Editar dentro de la DataTable (Edición Individual)
+            $('#tablaSitios').on('click', '.btn-editar-sitio', function() {
+                $('#modalTitulo').html('<i class="fas fa-edit me-2"></i> Modificar Datos de Sitio');
+
+                $('#SitiId').val($(this).data('id'));
+                $('#SedeEstacionamientosFk').val($(this).data('sede'));
+                $('#SitiNombreSitio').val($(this).data('nombre'));
+
+                // Ocultar generador masivo y mostrar campo de texto individual obligatorio
+                $('#divCantidad').hide();
+                $('#CantidadSitios').prop('required', false);
+                $('#divNombreIndividual').show();
+                $('#SitiNombreSitio').prop('required', true);
+
+                $('#modalSitio').modal('show');
+            });
+
+            // Función: Carga el selector de Sedes dinámicamente desde tu controlador de Sedes
+            function cargarSedesCombo() {
+                $.getJSON('/Sedes/ObtenerSedesJson', function (data) {
+                    const select = $('#SedeEstacionamientosFk');
                     select.html('<option value="" disabled selected>-- Seleccione una opción --</option>');
 
-                    data.forEach(tipo => {
-                        select.append(`<option value="${tipo.tidoId}">${tipo.tidoNombreDoc}</option>`);
+                    data.forEach(sede => {
+                        select.append(`<option value="${sede.seestId}">${sede.seestNombreEstacionamiento}</option>`);
                     });
                 });
             }
 
             function initDataTable() {
-                $('#tablaEntidades').DataTable({
+                $('#tablaSitios').DataTable({
                     ajax: {
-                        url: '/Entidades/ObtenerEntidadesJson',
+                        url: '/Sitios/ObtenerSitiosJson',
                         dataSrc: ''
                     },
                     destroy: true,
                     responsive: true,
                     columns: [
-                        { data: 'entiId' },
-                        { data: 'entiRazonSocial', className: 'text-start align-middle' },
-                        { data: 'tipoDocumento' },
-                        { data: 'entiNroDocumento' },
+                        { data: 'sitiId' },
+                        { data: 'sitiNombreSitio', className: 'text-start align-middle' },
+                        { data: 'sedeNombre', className: 'text-start align-middle' },
                         {
                             data: null,
                             orderable: false,
                             render: function(data, type, row) {
                                 return `
                                     <div class="form-button-action justify-content-center">
-                                        <button type="button" class="btn btn-link btn-primary btn-lg btn-editar-entidad"
-                                                data-id="${row.entiId}" data-doc="${row.tipoDocumentoFk}"
-                                                data-nro="${row.entiNroDocumento}" data-rz="${row.entiRazonSocial}"
-                                                data-bs-toggle="tooltip" title="Editar">
+                                        <button type="button" class="btn btn-link btn-primary btn-lg btn-editar-sitio"
+                                                data-id="${row.sitiId}" data-sede="${row.sedeEstacionamientosFk}"
+                                                data-nombre="${row.sitiNombreSitio}" data-bs-toggle="tooltip" title="Editar">
                                             <i class="fa fa-edit fs-5"></i>
                                         </button>
-                                        <button type="button" class="btn btn-link btn-danger btn-lg btn-anular-entidad"
-                                                data-id="${row.entiId}" data-bs-toggle="tooltip" title="Anular">
+                                        <button type="button" class="btn btn-link btn-danger btn-lg btn-anular-sitio"
+                                                data-id="${row.sitiId}" data-bs-toggle="tooltip" title="Anular">
                                             <i class="fa fa-times fs-4"></i>
                                         </button>
                                     </div>
@@ -159,30 +181,30 @@
                 });
             }
 
-            // GUARDAR / EDITAR CON ALERTA Y REFRESO ASÍNCRONO
-            $('#formModalEntidad').submit(function (e) {
+            // PROCESAR GUARDAR (CREAR MASIVO O ACTUALIZAR INDIVIDUAL)
+            $('#formModalSitio').submit(function (e) {
                 e.preventDefault();
 
-                const btn = $('#btnGuardarEntidad');
+                const btn = $('#btnGuardarSitio');
                 btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Guardando...');
 
                 $.ajax({
-                    url: '/Entidades/RegistrarEntidad',
+                    url: '/Sitios/RegistrarSitio',
                     type: 'POST',
                     data: $(this).serialize(),
                     success: (res) => {
                         if (res.success) {
-                            $('#modalEntidad').modal('hide');
+                            $('#modalSitio').modal('hide');
 
                             Swal.fire({
                                 icon: 'success',
-                                title: '¡Proceso Exitoso!',
+                                title: '¡Operación Exitosa!',
                                 text: res.message,
                                 timer: 2000,
                                 showConfirmButton: false
                             }).then(() => {
-                                // RECARGA ASÍNCRONA MANTENIENDO LA PAGINACIÓN
-                                $('#tablaEntidades').DataTable().ajax.reload(null, false);
+                                // Recarga asíncrona en caliente manteniendo la paginación
+                                $('#tablaSitios').DataTable().ajax.reload(null, false);
                             });
                         } else {
                             Swal.fire({
@@ -197,31 +219,20 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Ocurrió un fallo de red o base de datos al guardar.'
+                            text: 'Ocurrió un error en el servidor al procesar la solicitud.'
                         });
                         restaurarBotonGuardar(btn);
                     }
                 });
             });
 
-            $('#tablaEntidades').on('click', '.btn-editar-entidad', function() {
-                $('#modalTitulo').html('<i class="fas fa-edit me-2"></i> Modificar Datos de Entidad');
-
-                $('#EntiId').val($(this).data('id'));
-                $('#TipoDocumentoFk').val($(this).data('doc'));
-                $('#EntiNroDocumento').val($(this).data('nro'));
-                $('#EntiRazonSocial').val($(this).data('rz'));
-
-                $('#modalEntidad').modal('show');
-            });
-
-            // ANULAR CON ALERTA Y REFRESO ASÍNCRONO
-            $('#tablaEntidades').on('click', '.btn-anular-entidad', function() {
-                const idEntidad = $(this).data('id');
+            // PROCESAR ANULACIÓN LÓGICA
+            $('#tablaSitios').on('click', '.btn-anular-sitio', function() {
+                const idSitio = $(this).data('id');
 
                 Swal.fire({
-                    title: '¿Está seguro de anular la entidad?',
-                    text: "Esta acción cambiará el estado operacional en el sistema.",
+                    title: '¿Está seguro de anular el sitio?',
+                    text: "Esta acción inhabilitará temporalmente el espacio de parqueo.",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
@@ -231,20 +242,20 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: '/Entidades/AnularEntidad',
+                            url: '/Sitios/AnularSitio',
                             type: 'POST',
-                            data: { id: idEntidad },
+                            data: { id: idSitio },
                             success: (res) => {
                                 if (res.success) {
                                     Swal.fire({
                                         icon: 'success',
-                                        title: 'Anulado',
+                                        title: 'Sitio Anulado',
                                         text: res.message,
                                         timer: 1500,
                                         showConfirmButton: false
                                     }).then(() => {
-                                        // RECARGA EN CALIENTE AL ANULAR
-                                        $('#tablaEntidades').DataTable().ajax.reload(null, false);
+                                        // Recarga asíncrona de las filas
+                                        $('#tablaSitios').DataTable().ajax.reload(null, false);
                                     });
                                 } else {
                                     Swal.fire({
@@ -257,8 +268,8 @@
                             error: () => {
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Fallo de conexión',
-                                    text: 'No se pudo procesar la solicitud de anulación.'
+                                    title: 'Fallo de Red',
+                                    text: 'No se pudo completar la solicitud de anulación.'
                                 });
                             }
                         });

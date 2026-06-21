@@ -1,0 +1,367 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Registro de Ingresos de Vehículos";
+    string idSedeUsuario = User.FindFirst("SedeId")?.Value ?? "0";
+    string nombreSedeUsuario = User.FindFirst("SedeNombre")?.Value ?? "Sede Actual";
+}
+
+<style>
+    /* COMPONENTE INTERACTIVO: MAPA ARQUITECTÓNICO DEL ESTACIONAMIENTO */
+    .parking-layout-canvas {
+        background-color: #f8fafc;
+        border: 3px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 25px;
+        min-width: 950px; /* Evita que los bloques se deformen */
+        position: relative;
+    }
+
+    /* FILA SUPERIOR (Sitios del 9 al 37) */
+    .parking-row-top {
+        display: grid;
+        grid-template-columns: repeat(29, minmax(32px, 1fr));
+        gap: 3px;
+        margin-bottom: 15px;
+        border-bottom: 2px dashed #94a3b8;
+        padding-bottom: 10px;
+    }
+
+    /* NÚCLEO CENTRAL: BLOQUES DOBLES ESPALDA CON ESPALDA */
+    .parking-core-island {
+        border: 4px double #94a3b8;
+        background-color: #f1f5f9;
+        padding: 10px;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+    .parking-row-central-top {
+        display: grid;
+        grid-template-columns: repeat(22, minmax(38px, 1fr));
+        gap: 4px;
+        margin-bottom: 12px;
+    }
+    .parking-row-central-bottom {
+        display: grid;
+        grid-template-columns: repeat(22, minmax(38px, 1fr));
+        gap: 4px;
+    }
+
+    /* FILA INFERIOR (Sitios del 48 al 66) */
+    .parking-row-bottom {
+        display: grid;
+        grid-template-columns: repeat(19, minmax(45px, 1fr));
+        gap: 4px;
+        margin-top: 15px;
+        border-top: 2px dashed #94a3b8;
+        padding-top: 10px;
+    }
+
+    /* CARRILES DE CIRCULACIÓN (SIMULACIÓN DE CALLE INTERNA) */
+    .traffic-lane {
+        text-align: center;
+        color: #94a3b8;
+        font-weight: bold;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 4px 0;
+        background: linear-gradient(90deg, transparent 30%, #cbd5e1 30%, #cbd5e1 70%, transparent 70%);
+        background-size: 20px 100%;
+    }
+
+    /* DISEÑO DE CASILLEROS INDIVIDUALES VERTICALES (Estilo plano técnico) */
+    .parking-slot-unit {
+        height: 65px;
+        background-color: #ffffff;
+        border: 2px solid #cbd5e1;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 2px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.15s ease-in-out;
+        user-select: none;
+    }
+
+    /* COLORES DE ESTADOS VIVOS */
+    .slot-libre {
+        background-color: #d1fae5;
+        border-color: #10b981;
+        color: #065f46;
+    }
+    .slot-libre:hover {
+        background-color: #a7f3d0;
+        transform: scale(1.08);
+        z-index: 10;
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .slot-ocupado {
+        background-color: #fee2e2;
+        border-color: #ef4444;
+        color: #991b1b;
+        cursor: not-allowed;
+    }
+
+    /* SELECCIONADO (Efecto resaltado azul de alta visibilidad) */
+    .slot-libre.selected {
+        background-color: #3b82f6 !important;
+        border-color: #1d4ed8 !important;
+        color: #ffffff !important;
+        transform: scale(1.1);
+        box-shadow: 0 0 12px #3b82f6;
+        z-index: 10;
+    }
+</style>
+
+<div class="page-header">
+    <h3 class="fw-bold mb-3">Control de Accesos</h3>
+    <ul class="breadcrumbs mb-3">
+        <li class="nav-home"><a href="/Home/Index"><i class="fas fa-home"></i></a></li>
+        <li class="separator"><i class="fas fa-arrow-right"></i></li>
+        <li class="nav-item"><a>Operaciones</a></li>
+        <li class="separator"><i class="fas fa-arrow-right"></i></li>
+        <li class="nav-item"><a>Ingreso de Vehículos</a></li>
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex align-items-center justify-content-between bg-white py-3">
+                <div class="card-title text-secondary fw-semibold m-0">
+                    <i class="fas fa-sign-in-alt me-2 text-success"></i> Vehículos en Estacionamiento
+                    <span class="badge bg-info ms-2">Sede: @nombreSedeUsuario</span>
+                </div>
+                <button class="btn btn-success btn-round ms-auto" id="btnAbrirModalIngreso">
+                    <i class="fa fa-car me-2"></i> Registrar Ingreso
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tablaIngresados" class="display table table-striped table-hover w-100">
+                        <thead class="bg-dark text-white text-center">
+                            <tr>
+                                <th style="width: 8%">ID</th>
+                                <th>Placa Vehículo</th>
+                                <th>Espacio Asignado</th>
+                                <th>Fecha / Hora Ingreso</th>
+                                <th style="width: 12%">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center align-middle"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalIngreso" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+            <div class="modal-header bg-success text-white py-3" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                <h4 class="modal-title fw-bold mb-0"><i class="fas fa-id-card me-2"></i> Nuevo Ticket de Ingreso</h4>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formModalIngreso" autocomplete="off">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="card bg-light border-0 p-3 mb-3" style="border-radius: 10px;">
+                                <div class="form-group mb-3 px-0">
+                                    <label class="form-label fw-bold text-secondary">Vehículo Ingresante <span class="text-danger">*</span></label>
+                                    <select class="form-select fw-bold text-primary" id="VehiculosFk" name="VehiculosFk" style="font-size: 1.1rem;" required>
+                                        </select>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="fw-bold text-muted d-block mb-2">Referencia de Estados:</small>
+                                    <div class="d-flex align-items-center mb-1"><span class="badge bg-success me-2">&nbsp;&nbsp;</span> <small>Casillero Disponible</small></div>
+                                    <div class="d-flex align-items-center"><span class="badge bg-danger me-2">&nbsp;&nbsp;</span> <small>Casillero Ocupado</small></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-9">
+                            <label class="form-label fw-bold text-secondary mb-2"><i class="fas fa-map-marked-alt me-1"></i> Haga Clic en el Casillero a Ocupar:</label>
+                            
+                            <input type="hidden" id="SitiosFk" name="SitiosFk" required />
+
+                            <div class="w-100 overflow-auto">
+                                <div class="parking-layout-canvas">
+                                    
+                                    <div id="zoneTop" class="parking-row-top"></div>
+
+                                    <div class="traffic-lane"><i class="fas fa-chevron-left me-3"></i> ZONA DE CIRCULACIÓN INTERNA <i class="fas fa-chevron-left ms-3"></i></div>
+
+                                    <div class="parking-core-island">
+                                        <div id="zoneCentralTop" class="parking-row-central-top"></div>
+                                        <div style="height: 6px; background-color:#cbd5e1; margin: 8px 0; border-radius:2px;"></div>
+                                        <div id="zoneCentralBottom" class="parking-row-central-bottom"></div>
+                                    </div>
+
+                                    <div class="traffic-lane">ZONA DE CIRCULACIÓN INTERNA <i class="fas fa-chevron-right ms-3"></i></div>
+
+                                    <div id="zoneBottom" class="parking-row-bottom"></div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-light p-3" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="btnGuardarIngreso" class="btn btn-success px-4 fw-bold">
+                        <i class="fas fa-print me-1"></i> Generar Ticket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/plugin/datatables/datatables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            const sedeUsuarioLogueado = parseInt("@idSedeUsuario");
+
+            initDataTable();
+            cargarComboVehiculos();
+
+            $('#btnAbrirModalIngreso').click(function() {
+                $('#formModalIngreso')[0].reset();
+                $('#SitiosFk').val('');
+                
+                if (sedeUsuarioLogueado > 0) {
+                    generarPlanoArquitectonico(sedeUsuarioLogueado);
+                }
+                $('#modalIngreso').modal('show');
+            });
+
+            // FUNCIÓN: Clasifica y dibuja los sitios recreando la distribución de la imagen
+            function generarPlanoArquitectonico(sedeId) {
+                // Limpiamos los carriles
+                $('#zoneTop, #zoneCentralTop, #zoneCentralBottom, #zoneBottom').empty();
+
+                $.getJSON(`/Sitios/ObtenerSitiosPorSedeJson?sedeId=${sedeId}`, function(sitios) {
+                    
+                    sitios.forEach(sitio => {
+                        let claseEstado = sitio.estaLibre ? 'slot-libre' : 'slot-ocupado';
+                        let icono = sitio.estaLibre ? '<i class="fas fa-check text-success" style="font-size:0.65rem;"></i>' : '<i class="fas fa-car text-danger"></i>';
+                        let labelCorto = sitio.sitiNombreSitio.replace(/Sitio\s+/i, '').split('(')[0].trim();
+                        
+                        // Extraemos el número puramente para saber en qué bloque ubicarlo según tu plano
+                        let numeroSitio = parseInt(labelCorto.replace(/\D/g, '')) || 0;
+
+                        let htmlSlot = $(`
+                            <div class="parking-slot-unit ${claseEstado}" data-id="${sitio.sitiId}" data-libre="${sitio.estaLibre}">
+                                <span style="opacity:0.6; font-size:0.65rem;">N°</span>
+                                <span class="slot-number">${labelCorto}</span>
+                                <div class="slot-icon-container">${icono}</div>
+                            </div>
+                        `);
+
+                        // DISTRIBUCIÓN BASADA EN LOS RANGOS DE TU IMAGEN ADJUNTADA:
+                        if (numeroSitio >= 9 && numeroSitio <= 37) {
+                            $('#zoneTop').append(htmlSlot);
+                        } else if (numeroSitio >= 90 && numeroSitio <= 111) {
+                            $('#zoneCentralTop').append(htmlSlot);
+                        } else if (numeroSitio >= 69 && numeroSitio <= 89) {
+                            $('#zoneCentralBottom').append(htmlSlot);
+                        } else if (numeroSitio >= 48 && numeroSitio <= 66) {
+                            $('#zoneBottom').append(htmlSlot);
+                        } else {
+                            // Comodín por si hay números colaterales (los mandamos arriba por defecto)
+                            $('#zoneTop').append(htmlSlot);
+                        }
+                    });
+                });
+            }
+
+            // SELECCIÓN DE CASILLERO
+            $('.parking-layout-canvas').on('click', '.parking-slot-unit', function() {
+                if (!$(this).data('libre')) {
+                    Swal.fire({ icon: 'warning', title: 'Casillero Ocupado', text: 'Por favor seleccione un casillero verde.', timer: 1200, showConfirmButton: false });
+                    return;
+                }
+                $('.parking-slot-unit').removeClass('selected');
+                $(this).addClass('selected');
+                $('#SitiosFk').val($(this).data('id'));
+            });
+
+            // GUARDADO VIA AJAX
+            $('#formModalIngreso').submit(function (e) {
+                e.preventDefault();
+                if ($('#SitiosFk').val() === '') {
+                    Swal.fire({ icon: 'error', title: 'Atención', text: 'Debe hacer clic sobre un casillero verde para asignarlo.' });
+                    return;
+                }
+
+                const btn = $('#btnGuardarIngreso');
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Procesando...');
+
+                $.ajax({
+                    url: '/RegistrosEstacionamiento/RegistrarIngreso',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: (res) => {
+                        if (res.success) {
+                            $('#modalIngreso').modal('hide');
+                            Swal.fire({ icon: 'success', title: '¡Ingreso Exitoso!', text: res.message, timer: 1500, showConfirmButton: false })
+                            .then(() => {
+                                $('#tablaIngresados').DataTable().ajax.reload(null, false);
+                            });
+                        } else {
+                            Swal.fire({ icon: 'warning', title: 'Atención', text: res.message });
+                        }
+                        btn.prop('disabled', false).html('<i class="fas fa-print me-1"></i> Generar Ticket');
+                    },
+                    error: () => {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo crítico al guardar.' });
+                        btn.prop('disabled', false).html('<i class="fas fa-print me-1"></i> Generar Ticket');
+                    }
+                });
+            });
+
+            function initDataTable() {
+                $('#tablaIngresados').DataTable({
+                    ajax: { url: '/RegistrosEstacionamiento/ObtenerIngresadosJson', dataSrc: '' },
+                    destroy: true,
+                    responsive: true,
+                    order: [[3, "desc"]],
+                    columns: [
+                        { data: 'reesId' },
+                        { data: 'placa', className: 'fw-bold text-dark' },
+                        { data: 'sitioNombre' },
+                        { data: 'fechaIngreso' },
+                        {
+                            data: 'estado',
+                            render: function(data) {
+                                return `<span class="badge bg-success px-3 py-2 fw-bold" style="font-size:0.75rem;">${data}</span>`;
+                            }
+                        }
+                    ],
+                    language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }
+                });
+            }
+
+            function cargarComboVehiculos() {
+                $.getJSON('/Vehiculos/ObtenerVehiculosJson', function (data) {
+                    const select = $('#VehiculosFk');
+                    select.html('<option value="" disabled selected>-- Seleccione --</option>');
+                    data.forEach(v => { select.append(`<option value="${v.vehiId}">${v.vehiPlaca}</option>`); });
+                });
+            }
+        });
+    </script>
+}
